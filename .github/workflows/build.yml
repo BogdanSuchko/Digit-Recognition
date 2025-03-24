@@ -10,10 +10,10 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.12
     
@@ -23,12 +23,20 @@ jobs:
         pip install pyinstaller
         pip install PyQt5 tensorflow pillow scipy numpy tqdm
     
-    - name: Build with PyInstaller
+    - name: Train initial model if needed
       run: |
-        pyinstaller --onefile --windowed --name digit_trainer digit_trainer.py
+        if (-not (Test-Path -Path "digit_model.keras")) {
+          python train_model.py
+        }
+    
+    - name: Build digit_recognizer (main app)
+      run: |
+        pyinstaller --onefile --windowed --name digit_recognizer digit_recognizer.py
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: windows-app
-        path: dist/
+        name: digit-recognition-app
+        path: |
+          dist/
+          digit_model.keras
